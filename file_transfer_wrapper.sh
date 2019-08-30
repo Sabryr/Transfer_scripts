@@ -8,23 +8,24 @@
 # To stop the script the LOCK file should be deleted
 # This could be done as the final step in the job
 
-LOCK="/cluster/home/sabryr/jobs/file_sync/Transfer"
+LOCK="/cluster/home/sabryr/jobs/Transfer_scripts/Transfer"
 COPYTO="/tos-project4/SCRATCH/sabryr/files/"
-FILELIST="/cluster/home/sabryr/jobs/file_sync/files.list"
+FILELIST="/cluster/home/sabryr/jobs/Transfer_scripts/files.list"
 LOG=$(date +"%Y%m%d_%H%M%S").log
 
 if [ -f $LOCK ]
 then
  echo "Found  $LOCK, may be  there is an unfinished transfer, if not delete this and try again"
 else
+	sbatch transfer_to_nird.slurm &
 	echo "Creating $LOCK"
 	echo $(date) > $LOCK
 	is_list_not_empty=true
-	echo "echo $(ls -lh $LOCK)  is_list_not_empty=$is_list_not_empty"
+	#echo "echo $(ls -lh $LOCK)  is_list_not_empty=$is_list_not_empty"
 	while  [ -f $LOCK ] || [ "$is_list_not_empty" = "true" ]
 	do
 		is_list_not_empty=false
-		echo "echo $(ls -lh $LOCK)  is_list_not_empty=$is_list_not_empty"
+		#echo "echo $(ls -lh $LOCK)  is_list_not_empty=$is_list_not_empty"
 		if [ -f $FILELIST ]
 		then
 			for file in $(grep -v "#" $FILELIST);
@@ -43,5 +44,5 @@ else
 		sleep 5
         	printf "."
 	done
+	rsync -av $LOG	$COPYTO
 fi
-
